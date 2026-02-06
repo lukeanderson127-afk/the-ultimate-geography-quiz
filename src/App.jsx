@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import questions from "./questions";
 import Confetti from "react-confetti";
-import confetti from "canvas-confetti"; // ⭐ stable fireworks library
+import confetti from "canvas-confetti"; 
 
 function shuffleArray(array) {
   const newArray = [...array];
@@ -26,7 +26,7 @@ const App = () => {
     height: window.innerHeight,
   });
 
-  // ⭐ FIREWORKS FUNCTION (stable + reliable)
+  
   const launchFirework = () => {
     const duration = 800;
     const animationEnd = Date.now() + duration;
@@ -68,7 +68,7 @@ const App = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ⭐ SAFE LOADING CHECK
+ 
   if (shuffledQuestions.length === 0) {
     return <p>Loading quiz…</p>;
   }
@@ -95,11 +95,11 @@ const App = () => {
     } else {
       setIsFinished(true);
 
-      // ⭐ PERFECT SCORE CELEBRATION
+      
       if (score === shuffledQuestions.length) {
         setShowCelebration(true);
 
-        // Triple fireworks burst
+        
         launchFirework();
         setTimeout(launchFirework, 400);
         setTimeout(launchFirework, 800);
@@ -134,8 +134,12 @@ const App = () => {
               }`}
             >
               {score === shuffledQuestions.length && (
-                <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
-              )}
+              <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
+          )}
+
+            {score !== shuffledQuestions.length && ( 
+              <h2 className="nice-try">Nice try, but you didn’t get a perfect score — try again!</h2>
+               )}
 
               <p>
                 Quiz Finished! Your Score: {score}/{shuffledQuestions.length}
@@ -144,7 +148,7 @@ const App = () => {
           )}
         </div>
 
-        {/* Confetti for perfect score */}
+        
         {showCelebration && (
           <Confetti width={windowSize.width} height={windowSize.height} />
         )}
