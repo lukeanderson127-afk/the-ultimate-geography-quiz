@@ -72,3 +72,20 @@ color: #17c48a;
 border: 1px solid tomato;
 color: tomato;
 }
+
+.results-message {
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.perfect-score {
+  border: 3px solid gold;
+  box-shadow: 0 0 20px gold;
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 10px gold; }
+  to { box-shadow: 0 0 25px gold; }
+}
