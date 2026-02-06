@@ -48,7 +48,7 @@ const App = () => {
     setSelectedAnswer(null);
     setIsAnswered(false);
   } else {
-    // re type after push
+    // fixed code block as was previously including last answer twice in final score
 setIsFinished(true);
 
 if (score === shuffledQuestions.length) {
