@@ -27,7 +27,9 @@ body {
 
 .card-container .header {
   margin-bottom: 20px;
+  text-align: center;  
 }
+
 
 .card-container .header h1 {
   font-size: 24px;
