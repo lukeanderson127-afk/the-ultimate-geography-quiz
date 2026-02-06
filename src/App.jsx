@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import questions from "./questions";
 import Confetti from "react-confetti";
 
@@ -21,10 +21,26 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
   useEffect(() => {
     setShuffledQuestions(shuffleArray(questions));
   }, []);
 
+useEffect(() => {
+  const handleResize = () => {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  };
+
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []); 
 
   if (shuffledQuestions.length === 0) return null;
 
@@ -74,12 +90,12 @@ if (score === shuffledQuestions.length) {
         <div className="header">
           <h1>The Ultimate Geography Quiz!</h1>
 
-          {!isFinished ? (
+    {!isFinished ? (
   <p>
     {currentQuestion + 1}: {currentQ.question}
   </p>
 ) : (
-  <div className="results-message">
+  <div className={`results-message ${score === shuffledQuestions.length ? "perfect-score" : ""}`}>
     {score === shuffledQuestions.length && (
       <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
     )}
@@ -89,9 +105,9 @@ if (score === shuffledQuestions.length) {
     </p>
   </div>
 )}
-
-        </div>
-          {showCelebration && <Confetti />}
+</div>
+{/* ✅ Full-screen confetti */}
+          {showCelebration && (<Confetti width={windowSize.width} height={windowSize.height} />)}
 
         {!isFinished && (
           <ul className="questions">
