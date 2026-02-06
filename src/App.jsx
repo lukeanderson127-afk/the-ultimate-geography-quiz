@@ -138,7 +138,7 @@ const App = () => {
           )}
 
             {score !== shuffledQuestions.length && ( 
-              <h2 className="nice-try">Nice try, but you didn’t get a perfect score — try again!</h2>
+              <h2 className="nice-try">Nice try, but you didn’t get a perfect score — But Dont Give Up!</h2>
                )}
 
               <p>
