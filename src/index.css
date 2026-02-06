@@ -22,7 +22,8 @@ body {
   padding: 24px 30px;
   border-radius: 8px;
   width: 500px;
-}
+  }
+
 
 .card-container .header {
   margin-bottom: 20px;
@@ -50,7 +51,10 @@ body {
   padding: 16px;
   border-radius: 10px;
   cursor: pointer;
-
+}
+.card-container > button {
+  display: block;
+  margin: 20px auto;
 }
 
 button {
