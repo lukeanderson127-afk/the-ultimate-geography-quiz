@@ -25,6 +25,7 @@ const App = () => {
     setShuffledQuestions(shuffleArray(questions));
   }, []);
 
+
   if (shuffledQuestions.length === 0) return null;
 
   const currentQ = shuffledQuestions[currentQuestion];
@@ -47,20 +48,17 @@ const App = () => {
     setSelectedAnswer(null);
     setIsAnswered(false);
   } else {
-    // include last answer in final score, then finish
-    const lastCorrect = selectedAnswer === currentQ.correctAnswer;
-    const finalScore = score + (lastCorrect ? 1 : 0);
-    setScore(finalScore);
-    setIsFinished(true);
+    // re type after push
+setIsFinished(true);
 
-    if (finalScore === shuffledQuestions.length) {
-      setShowCelebration(true);
-    }
-  }
-};
+if (score === shuffledQuestions.length) {
+  setShowCelebration(true);
+   }
+}
+  };
 
 
-  const handleReset = () => {
+  function handleReset() {
     setShuffledQuestions(shuffleArray(questions));
     setCurrentQuestion(0);
     setSelectedAnswer(null);
@@ -68,7 +66,7 @@ const App = () => {
     setScore(0);
     setIsFinished(false);
     setShowCelebration(false);
-};
+  }
 
   return (
     <>
@@ -77,14 +75,21 @@ const App = () => {
           <h1>The Ultimate Geography Quiz!</h1>
 
           {!isFinished ? (
-            <p>
-              {currentQuestion + 1}: {currentQ.question}
-            </p>
-          ) : (
-            <p>
-              Quiz Finished! Your Score: {score}/{shuffledQuestions.length}
-            </p>
-          )}
+  <p>
+    {currentQuestion + 1}: {currentQ.question}
+  </p>
+) : (
+  <div className="results-message">
+    {score === shuffledQuestions.length && (
+      <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
+    )}
+
+    <p>
+      Quiz Finished! Your Score: {score}/{shuffledQuestions.length}
+    </p>
+  </div>
+)}
+
         </div>
           {showCelebration && <Confetti />}
 
