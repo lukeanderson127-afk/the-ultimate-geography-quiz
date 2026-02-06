@@ -1,8 +1,7 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import questions from "./questions";
 import Confetti from "react-confetti";
-
-// note: saving change to trigger commit (no functional change)
+import confetti from "canvas-confetti"; // ⭐ stable fireworks library
 
 function shuffleArray(array) {
   const newArray = [...array];
@@ -21,28 +20,58 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
 
+  // ⭐ FIREWORKS FUNCTION (stable + reliable)
+  const launchFirework = () => {
+    const duration = 800;
+    const animationEnd = Date.now() + duration;
+
+    const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+    const frame = () => {
+      confetti({
+        particleCount: 50,
+        startVelocity: 40,
+        spread: 60,
+        origin: {
+          x: Math.random(),
+          y: randomInRange(0.1, 0.3),
+        },
+      });
+
+      if (Date.now() < animationEnd) {
+        requestAnimationFrame(frame);
+      }
+    };
+
+    frame();
+  };
+
   useEffect(() => {
     setShuffledQuestions(shuffleArray(questions));
   }, []);
 
-useEffect(() => {
-  const handleResize = () => {
-    setWindowSize({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
-  };
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
 
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []); 
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  if (shuffledQuestions.length === 0) return null;
+  // ⭐ SAFE LOADING CHECK
+  if (shuffledQuestions.length === 0) {
+    return <p>Loading quiz…</p>;
+  }
 
   const currentQ = shuffledQuestions[currentQuestion];
   const options = currentQ.options;
@@ -53,28 +82,32 @@ useEffect(() => {
     setSelectedAnswer(index);
     setIsAnswered(true);
 
-    if (index === shuffledQuestions[currentQuestion].correctAnswer) {
+    if (index === currentQ.correctAnswer) {
       setScore((s) => s + 1);
     }
   };
 
   const handleNextClick = () => {
-  if (currentQuestion < shuffledQuestions.length - 1) {
-    setCurrentQuestion(currentQuestion + 1);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
-  } else {
-    // fixed code block as was previously including last answer twice in final score
-setIsFinished(true);
+    if (currentQuestion < shuffledQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setIsAnswered(false);
+    } else {
+      setIsFinished(true);
 
-if (score === shuffledQuestions.length) {
-  setShowCelebration(true);
-   }
-}
+      // ⭐ PERFECT SCORE CELEBRATION
+      if (score === shuffledQuestions.length) {
+        setShowCelebration(true);
+
+        // Triple fireworks burst
+        launchFirework();
+        setTimeout(launchFirework, 400);
+        setTimeout(launchFirework, 800);
+      }
+    }
   };
 
-
-  function handleReset() {
+  const handleReset = () => {
     setShuffledQuestions(shuffleArray(questions));
     setCurrentQuestion(0);
     setSelectedAnswer(null);
@@ -82,7 +115,7 @@ if (score === shuffledQuestions.length) {
     setScore(0);
     setIsFinished(false);
     setShowCelebration(false);
-  }
+  };
 
   return (
     <>
@@ -90,24 +123,31 @@ if (score === shuffledQuestions.length) {
         <div className="header">
           <h1>The Ultimate Geography Quiz!</h1>
 
-    {!isFinished ? (
-  <p>
-    {currentQuestion + 1}: {currentQ.question}
-  </p>
-) : (
-  <div className={`results-message ${score === shuffledQuestions.length ? "perfect-score" : ""}`}>
-    {score === shuffledQuestions.length && (
-      <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
-    )}
+          {!isFinished ? (
+            <p>
+              {currentQuestion + 1}: {currentQ.question}
+            </p>
+          ) : (
+            <div
+              className={`results-message ${
+                score === shuffledQuestions.length ? "perfect-score" : ""
+              }`}
+            >
+              {score === shuffledQuestions.length && (
+                <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
+              )}
 
-    <p>
-      Quiz Finished! Your Score: {score}/{shuffledQuestions.length}
-    </p>
-  </div>
-)}
-</div>
-{/* ✅ Full-screen confetti */}
-          {showCelebration && (<Confetti width={windowSize.width} height={windowSize.height} />)}
+              <p>
+                Quiz Finished! Your Score: {score}/{shuffledQuestions.length}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Confetti for perfect score */}
+        {showCelebration && (
+          <Confetti width={windowSize.width} height={windowSize.height} />
+        )}
 
         {!isFinished && (
           <ul className="questions">
@@ -142,7 +182,6 @@ if (score === shuffledQuestions.length) {
             <button onClick={handleNextClick}>Next Question</button>
           )
         ) : (
-          
           <button onClick={handleReset}>Reset Quiz</button>
         )}
       </div>
