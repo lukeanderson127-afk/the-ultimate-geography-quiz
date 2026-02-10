@@ -20,13 +20,16 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  
+
 
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+const [timer, setTimer] = useState(5);
 
-  const [shuffledOptions, setShuffledOptions] = useState([]);
+const [shuffledOptions, setShuffledOptions] = useState([]);
 
   const launchFirework = () => {
     const duration = 800;
@@ -72,6 +75,26 @@ const App = () => {
 
     setShuffledOptions(shuffleArray(answerObjects));
   }, [shuffledQuestions, currentQuestion]);
+
+  // ⏱️ Timer countdown logic
+  useEffect(() => { if (isFinished) return; 
+    setTimer(5);
+     // reset timer for each question
+   const interval = setInterval(() => { 
+    setTimer((t) => { if (t <= 1) { clearInterval(interval);
+       // Auto-fail if unanswered 
+    if (!isAnswered) { setIsAnswered(true); setSelectedAnswer(null); } 
+    // Move to next question after short delay 
+    setTimeout(() => { handleNextClick(); }, 800);
+
+    return 0; 
+  } 
+  return t - 1;
+ }); 
+}, 1000);
+
+  return () => clearInterval(interval); 
+}, [currentQuestion]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -138,9 +161,12 @@ const App = () => {
           <h1>The Ultimate Geography Quiz!</h1>
 
           {!isFinished ? (
-            <p>
-              {currentQuestion + 1}: {currentQ.question}
-            </p>
+            <>
+              <p>
+                {currentQuestion + 1}: {currentQ.question}
+              </p>
+              <p className="timer">Time Remaining: {timer} seconds</p>
+            </>
           ) : (
             <div
               className={`results-message ${
