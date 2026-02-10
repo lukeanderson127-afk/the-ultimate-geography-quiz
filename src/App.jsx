@@ -165,7 +165,9 @@ const [shuffledOptions, setShuffledOptions] = useState([]);
               <p>
                 {currentQuestion + 1}: {currentQ.question}
               </p>
-              <p className="timer">Time Remaining: {timer} seconds</p>
+              <p className={`timer ${timer <= 2 ? "warning" : ""}`}>
+              ⏱️ Time left: {timer}s
+             </p>
             </>
           ) : (
             <div
