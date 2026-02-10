@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import questions from "./questions";
 import Confetti from "react-confetti";
-import confetti from "canvas-confetti"; 
+import confetti from "canvas-confetti";
 
 function shuffleArray(array) {
   const newArray = [...array];
@@ -26,7 +26,8 @@ const App = () => {
     height: window.innerHeight,
   });
 
-  
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+
   const launchFirework = () => {
     const duration = 800;
     const animationEnd = Date.now() + duration;
@@ -53,8 +54,24 @@ const App = () => {
   };
 
   useEffect(() => {
-    setShuffledQuestions(shuffleArray(questions));
+    // Shuffle questions on load
+    const randomizedQuestions = shuffleArray(questions);
+    setShuffledQuestions(randomizedQuestions);
   }, []);
+
+  // Shuffle answers whenever the question changes
+  useEffect(() => {
+    if (shuffledQuestions.length === 0) return;
+
+    const currentQ = shuffledQuestions[currentQuestion];
+
+    const answerObjects = currentQ.options.map((option, index) => ({
+      text: option,
+      isCorrect: index === currentQ.correctAnswer,
+    }));
+
+    setShuffledOptions(shuffleArray(answerObjects));
+  }, [shuffledQuestions, currentQuestion]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,13 +85,11 @@ const App = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
- 
   if (shuffledQuestions.length === 0) {
     return <p>Loading quiz…</p>;
   }
 
   const currentQ = shuffledQuestions[currentQuestion];
-  const options = currentQ.options;
 
   const handleAnswerClick = (index) => {
     if (isAnswered || isFinished) return;
@@ -82,7 +97,7 @@ const App = () => {
     setSelectedAnswer(index);
     setIsAnswered(true);
 
-    if (index === currentQ.correctAnswer) {
+    if (shuffledOptions[index].isCorrect) {
       setScore((s) => s + 1);
     }
   };
@@ -95,11 +110,9 @@ const App = () => {
     } else {
       setIsFinished(true);
 
-      
       if (score === shuffledQuestions.length) {
         setShowCelebration(true);
 
-        
         launchFirework();
         setTimeout(launchFirework, 400);
         setTimeout(launchFirework, 800);
@@ -108,7 +121,8 @@ const App = () => {
   };
 
   const handleReset = () => {
-    setShuffledQuestions(shuffleArray(questions));
+    const randomizedQuestions = shuffleArray(questions);
+    setShuffledQuestions(randomizedQuestions);
     setCurrentQuestion(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
@@ -134,12 +148,14 @@ const App = () => {
               }`}
             >
               {score === shuffledQuestions.length && (
-              <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
-          )}
+                <h2 className="smashed-it">🎉 You smashed it! 🎉</h2>
+              )}
 
-            {score !== shuffledQuestions.length && ( 
-              <h2 className="nice-try">Nice try, but you didn’t get a perfect score — But Dont Give Up!</h2>
-               )}
+              {score !== shuffledQuestions.length && (
+                <h2 className="nice-try">
+                  Nice try, but you didn’t get a perfect score — But Don’t Give Up!
+                </h2>
+              )}
 
               <p>
                 Quiz Finished! Your Score: {score}/{shuffledQuestions.length}
@@ -148,18 +164,17 @@ const App = () => {
           )}
         </div>
 
-        
         {showCelebration && (
           <Confetti width={windowSize.width} height={windowSize.height} />
         )}
 
         {!isFinished && (
           <ul className="questions">
-            {options.map((option, index) => {
+            {shuffledOptions.map((optionObj, index) => {
               let className = "";
 
               if (isAnswered) {
-                if (index === currentQ.correctAnswer) {
+                if (optionObj.isCorrect) {
                   className = "correct";
                 } else if (index === selectedAnswer) {
                   className = "incorrect";
@@ -172,7 +187,7 @@ const App = () => {
                   className={className}
                   onClick={() => handleAnswerClick(index)}
                 >
-                  {option}
+                  {optionObj.text}
                 </li>
               );
             })}
