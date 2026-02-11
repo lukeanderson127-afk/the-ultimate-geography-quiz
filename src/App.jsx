@@ -3,7 +3,6 @@ import questions from "./questions";
 import Confetti from "react-confetti";
 import confetti from "canvas-confetti";
 
-
 function shuffleArray(array) {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -34,8 +33,10 @@ const App = () => {
 
   const [timer, setTimer] = useState(5);
   const [shuffledOptions, setShuffledOptions] = useState([]);
- 
 
+  // ⏱️ NEW — Track start + total time
+  const [startTime, setStartTime] = useState(null);
+  const [totalTime, setTotalTime] = useState(null);
 
   const launchFirework = () => {
     const duration = 800;
@@ -80,38 +81,44 @@ const App = () => {
     setShuffledOptions(shuffleArray(answerObjects));
   }, [shuffledQuestions, currentQuestion]);
 
-  // COUNTDOWN EFFECT 
-  useEffect(() => { 
-  if (!showCountdown) return; 
-  
-  const interval = setInterval(() => {
- setCountdown((c) => { 
-  if (c <= 1) {
- clearInterval(interval); 
- setShowCountdown(false);
-  setQuizStarted(true);
-   return 0; } 
-   return c - 1; 
-  }); 
-  }, 1000);
-  return () => clearInterval(interval); 
+  // COUNTDOWN EFFECT
+  useEffect(() => {
+    if (!showCountdown) return;
+
+    const interval = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(interval);
+          setShowCountdown(false);
+          setQuizStarted(true);
+
+          // ⏱️ NEW — Start timer when quiz begins
+          setStartTime(Date.now());
+
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [showCountdown]);
+
+  // Reset timer when question changes
+  useEffect(() => {
+    if (quizStarted && !isFinished) {
+      setTimer(5);
+    }
+  }, [currentQuestion, quizStarted, isFinished]);
 
   // TIMER EFFECT
   useEffect(() => {
     if (!quizStarted || isFinished) return;
 
-    setTimer(5);
-
     const interval = setInterval(() => {
       setTimer((t) => {
         if (t <= 1) {
           clearInterval(interval);
-
-          if (!isAnswered) {
-            setIsAnswered(true);
-            setSelectedAnswer(null);
-          }
 
           setTimeout(() => {
             handleNextClick();
@@ -125,7 +132,7 @@ const App = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentQuestion, quizStarted, isFinished]);
+  }, [quizStarted, isFinished, currentQuestion]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -164,7 +171,19 @@ const App = () => {
     } else {
       setIsFinished(true);
 
-      if (score === shuffledQuestions.length) {
+      // ⏱️ NEW — Calculate precise time
+      const end = Date.now();
+      const elapsed = end - startTime;
+
+      const seconds = Math.floor(elapsed / 1000);
+      const milliseconds = elapsed % 1000;
+
+      setTotalTime({ seconds, milliseconds });
+
+      // 🎯 NEW — Use final score (avoids stale state)
+      const finalScore = score;
+
+      if (finalScore === shuffledQuestions.length) {
         setShowCelebration(true);
 
         launchFirework();
@@ -185,23 +204,34 @@ const App = () => {
     setShowCelebration(false);
     setTimer(5);
     setQuizStarted(false);
-    setShowCountdown(false); 
+    setShowCountdown(false);
     setCountdown(3);
+    setTotalTime(null); // ⏱️ NEW
   };
 
   return (
     <>
-      <div className="card-container">
+      <div
+        className={
+          score === shuffledQuestions.length && isFinished
+            ? "card-container perfect-score-container"
+            : "card-container"
+        }
+      >
         <div className="header">
-          <h1>The Ultimate Geography Quiz!</h1>
-        {!quizStarted && !showCountdown && (
-  <img
-    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/512px-The_Earth_seen_from_Apollo_17.jpg"
-    alt="Earth"
-    className="globe-image"
-  />
-)}
-         {quizStarted && !isFinished && !showCountdown && (
+          {!(isFinished && score === shuffledQuestions.length) && (
+            <h1>The Ultimate Geography Quiz!</h1>
+          )}
+
+          {!quizStarted && !showCountdown && (
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/512px-The_Earth_seen_from_Apollo_17.jpg"
+              alt="Earth"
+              className="globe-image"
+            />
+          )}
+
+          {quizStarted && !isFinished && !showCountdown && (
             <>
               <p>
                 {currentQuestion + 1}: {currentQ.question}
@@ -219,9 +249,24 @@ const App = () => {
               }`}
             >
               {score === shuffledQuestions.length && (
-                <div className="smashed-it">
+                <div className="perfect-score-header">
                   <h2>A Perfect Score!</h2>
-                  <h3>You Are The Quiz Master</h3>
+                  <h3>You Are The Master Of The Ultimate Geography Quiz!</h3>
+
+                  {/* ⏱️ NEW — Show seconds + milliseconds */}
+                  {totalTime && (
+                    <>
+                      <p className="completion-time">
+                        You completed the quiz in{" "}
+                        {totalTime.seconds}.
+                        {String(totalTime.milliseconds).padStart(3, "0")} seconds!
+                      </p>
+
+                      <p className="completion-speed">
+                        But can you do it faster?
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -237,28 +282,26 @@ const App = () => {
             </div>
           )}
         </div>
- {/* COUNTDOWN SCREEN */}
+
         {showCountdown && (
           <div className="countdown-screen">
             <h2>Get Ready…</h2>
             <h1>{countdown}</h1>
           </div>
-        )}       
+        )}
 
         {showCelebration && (
           <Confetti width={windowSize.width} height={windowSize.height} />
         )}
 
-          {quizStarted && !showCountdown && !isFinished && (
+        {quizStarted && !showCountdown && !isFinished && (
           <ul className="questions">
             {shuffledOptions.map((optionObj, index) => {
               let className = "";
 
               if (isAnswered) {
-                if (optionObj.isCorrect) {
-                  className = "correct";
-                } else if (index === selectedAnswer) {
-                  className = "incorrect";
+                if (selectedAnswer !== null && index === selectedAnswer) {
+                  className = optionObj.isCorrect ? "correct" : "incorrect";
                 }
               }
 
@@ -275,20 +318,17 @@ const App = () => {
           </ul>
         )}
 
-        {/* BUTTONS AT THE BOTTOM */}
-        {!quizStarted  && !showCountdown ? (
-          <button 
-          onClick={() => { 
-          setShowCountdown(true);
-          setCountdown(3);
-          }}
+        {!quizStarted && !showCountdown ? (
+          <button
+            onClick={() => {
+              setShowCountdown(true);
+              setCountdown(3);
+            }}
           >
-          Start Quiz
+            Start Quiz
           </button>
         ) : !isFinished && !showCountdown ? (
-          currentQuestion === 0 ? (
-            <button onClick={handleNextClick}>Next Question</button>
-          ) : currentQuestion === shuffledQuestions.length - 1 ? (
+          currentQuestion === shuffledQuestions.length - 1 ? (
             <button onClick={handleNextClick}>Finish Quiz</button>
           ) : (
             <button onClick={handleNextClick}>Next Question</button>
