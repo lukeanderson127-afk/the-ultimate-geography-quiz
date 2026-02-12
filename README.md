@@ -88,6 +88,7 @@ lukeanderson127@gmail.com
 Feel free to reach out if you have any questions or feedback! Thank you for visiting
 https://github.com/lukeanderson127-afk/The-Ultimate-Geography-Quiz
 
+Thanks for reading!
 
 
 
