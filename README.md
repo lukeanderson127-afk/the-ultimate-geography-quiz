@@ -34,7 +34,7 @@ this is SPA quiz game!
 
 Quiz Rules:
 1.To Start the quiz click the button at the bottom of the screen and the countdown screen begins giving you 3 seconds to get ready!
-![Quiz Screenshot](./images/my-screenshot.png)
+![Quiz Screenshot](./image.png)
 2.The first out of ten Question will appear with a 5 second timer underneath the header to read AND answer the question.
 3.At 2 seconds the timer will flash red so you know your nearly out of time!
 4.There will be ten questions to answer each one rendered randomnly ASWELL as the answers so theres no way to cheat it by continuity when you fail and have to try again!
